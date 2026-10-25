@@ -20,7 +20,7 @@ class Model(Protocol):
     def complete_json(self, system: str, user: str) -> dict: ...
 
 
-USER_AGENT = "second-read/0.1 (+https://github.com/endrithotii/second-read)"
+USER_AGENT = "trial-match/0.1 (+https://github.com/endrithotii/trial-match)"
 
 
 class QuotaExhausted(RuntimeError):
