@@ -96,6 +96,21 @@ class Decisions(unittest.TestCase):
         screening = clean + [{"id": "I3", "kind": "inclusion", "answer": "screening"}]
         self.assertEqual(outcome(screening)["judged"], 2)
 
+    def test_cohort_specific_failure_is_a_question_not_a_blocker(self):
+        rows = [{"id": "I1", "kind": "inclusion", "answer": "met"},
+                {"id": "I7", "kind": "inclusion", "answer": "not_met", "conditional": True}]
+        o = outcome(rows)
+        self.assertEqual((o["status"], o["blockers"], o["open"]), ("possible", [], ["I7"]))
+
+    def test_conditional_detection(self):
+        yes = ["for AGA-negative NSCLC only: no actionable alterations", "Cohort 1B: no prior therapy",
+               "For patients with brain metastases: stable for 4 weeks", "Part A (dose escalation): ECOG 0-2"]
+        no = ["ECOG 0-1", "Formalin-fixed tumour tissue available", "Documented EGFR mutation"]
+        for t in yes:
+            self.assertTrue(criteria.is_conditional(criteria.Criterion("I1", "inclusion", t)), t)
+        for t in no:
+            self.assertFalse(criteria.is_conditional(criteria.Criterion("I1", "inclusion", t)), t)
+
 
 if __name__ == "__main__":
     unittest.main()

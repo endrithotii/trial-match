@@ -1,0 +1,82 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<title>trial-match</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+:root { --bg: #F4F6F5; --card: #FCFDFC; --ink: #1C2422; --muted: #56625E; --rule: #D3DAD7;
+  --ok: #2F6B4F; --ok-bg: #E2EFE8; --no: #9C3B3B; --no-bg: #F5E3E1; --open: #8A9692; --open-bg: #E9EDEB;
+  --dispute: #A5660B; --dispute-bg: #F6EAD3; --link: #2C5A8A;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --cond: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif; }
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 16px/1.55 var(--sans); }
+a { color: var(--link); }
+a:focus-visible, summary:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+.wrap { max-width: 76rem; margin: 0 auto; padding-inline: 1.25rem; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.banner { margin: 0; padding: 0.6rem 1.25rem; background: var(--ink); color: #EEF2F0; font-size: 0.9rem; text-align: center; }
+.top { padding-block: 2.5rem 1.5rem; }
+.crumb { margin: 0 0 0.5rem; font: 600 0.9rem var(--cond); }
+h1 { font: 600 clamp(1.9rem, 4vw, 2.6rem)/1.1 var(--cond); margin: 0; letter-spacing: -0.01em; }
+h2 { font: 600 1.05rem var(--cond); margin: 0 0 0.6rem; }
+h4 { font: 600 0.95rem var(--cond); margin: 0 0 0.4rem; }
+.lede { max-width: 62ch; color: var(--muted); margin: 0.8rem 0 0; }
+.tally { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0 0; }
+.tally div { background: var(--card); border: 1px solid var(--rule); border-top: 4px solid; padding: 0.6rem 1rem; min-width: 9rem; }
+.tally .likely { border-top-color: var(--ok); } .tally .possible { border-top-color: var(--dispute); } .tally .not_eligible { border-top-color: var(--no); }
+.tally dt { font-size: 0.85rem; color: var(--muted); } .tally dd { margin: 0; font: 600 1.8rem/1.1 var(--cond); }
+.note.warn { background: var(--dispute-bg); padding: 0.6rem 0.9rem; max-width: 62ch; }
+.grid { display: grid; grid-template-columns: 19rem 1fr; gap: 2rem; align-items: start; padding-bottom: 2rem; }
+.profile { position: sticky; top: 1rem; background: var(--card); border: 1px solid var(--rule); padding: 1.1rem 1.2rem; font-size: 0.92rem; }
+.profile ol { list-style: none; padding: 0; margin: 0 0 1.4rem; }
+.profile li { margin: 0 0 0.45rem; }
+.profile li b { display: inline-block; width: 2.1rem; color: var(--muted); font: 600 0.85rem var(--cond); }
+.legend { list-style: none; padding: 0; margin: 0 0 1rem; }
+.legend li { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.35rem; }
+.small { color: var(--muted); font-size: 0.85rem; margin: 0; }
+
+.trial { background: var(--card); border: 1px solid var(--rule); border-left: 5px solid var(--open); margin: 0 0 0.9rem; }
+.trial.likely { border-left-color: var(--ok); } .trial.possible { border-left-color: var(--dispute); } .trial.not_eligible { border-left-color: var(--no); }
+.trial > summary { list-style: none; cursor: pointer; padding: 1rem 1.2rem; display: grid; gap: 0.3rem; }
+.trial > summary::-webkit-details-marker { display: none; }
+.status { font: 600 0.85rem var(--cond); }
+.likely .status { color: var(--ok); } .possible .status { color: var(--dispute); } .not_eligible .status { color: var(--no); }
+.title { font-weight: 600; line-height: 1.35; }
+.meta { color: var(--muted); font-size: 0.88rem; }
+.strip { display: flex; flex-wrap: wrap; gap: 3px; margin: 0.35rem 0 0.1rem; }
+.sq { display: inline-block; width: 14px; height: 14px; border-radius: 2px; background: var(--open-bg); border: 1px solid var(--open); }
+.sq.ok { background: var(--ok); border-color: var(--ok); } .sq.no { background: var(--no); border-color: var(--no); }
+.sq.dispute { background: var(--dispute); border-color: var(--dispute); }
+.sq.screen { background: transparent; border: 1px dashed var(--open); }
+a.sq:hover { outline: 2px solid var(--ink); outline-offset: 1px; }
+.body { padding: 0 1.2rem 1.2rem; }
+.callout { padding: 0.8rem 1rem; margin: 0 0 0.9rem; }
+.callout.no { background: var(--no-bg); } .callout.open { background: var(--open-bg); }
+.callout ul { margin: 0; padding-left: 1.1rem; } .callout li { margin: 0.25rem 0; }
+.why { display: block; color: var(--muted); font-size: 0.88rem; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.5rem 0.6rem 0.5rem 0; border-bottom: 1px solid var(--rule); }
+thead th { font: 600 0.82rem var(--cond); color: var(--muted); border-bottom-color: var(--ink); }
+tbody th { font: 600 0.85rem var(--cond); white-space: nowrap; }
+tr:target { background: #FFF6D6; }
+.ans { white-space: nowrap; }
+.pill { display: inline-block; font: 600 0.8rem var(--cond); padding: 0.1rem 0.45rem; border-radius: 3px; }
+.pill.ok { background: var(--ok-bg); color: var(--ok); } .pill.no { background: var(--no-bg); color: var(--no); }
+.pill.open { background: var(--open-bg); color: var(--muted); } .pill.dispute { background: var(--dispute-bg); color: var(--dispute); }
+.pill.screen { border: 1px dashed var(--open); color: var(--muted); }
+.by { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 0.15rem; }
+.facts abbr { text-decoration: underline dotted; cursor: help; font: 600 0.85rem var(--cond); margin-right: 0.2rem; }
+.reason { color: var(--muted); min-width: 12rem; }
+.src { margin: 0.8rem 0 0; font-size: 0.9rem; }
+.patients { list-style: none; padding: 0; margin: 0 0 3rem; display: grid; gap: 0.8rem; }
+.patients a { display: grid; gap: 0.2rem; padding: 1rem 1.2rem; background: var(--card); border: 1px solid var(--rule); color: var(--ink); text-decoration: none; }
+.patients a:hover { border-color: var(--link); }
+footer { color: var(--muted); font-size: 0.82rem; padding-block: 1rem 3rem; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .profile { position: static; } }
+</style></head><body>
+<p class="banner">Synthetic patients. A research demonstration, not medical advice.</p>
+<header class="wrap top"><h1>trial-match</h1>
+<p class="lede">Which recruiting clinical trials could this patient join, and why? Each trial's eligibility criteria are split into single criteria and judged against the patient's facts, with every verdict tied to the facts it used and checked by a second, independent model.</p></header>
+<main class="wrap"><ul class="patients"><li><a href="patient-a.html"><span class="title">Patient A (synthetic)</span><span class="meta">EGFR exon 19 deletion detected on tissue next-generation sequencing at diagnosis.</span><span class="meta">0 likely, 3 possible, 7 not eligible among 10 trials near Basel</span></a></li><li><a href="patient-b.html"><span class="title">Patient B (synthetic)</span><span class="meta">EGFR exon 20 insertion mutation detected on tissue next-generation sequencing.</span><span class="meta">0 likely, 2 possible, 8 not eligible among 10 trials near Zurich</span></a></li><li><a href="patient-c.html"><span class="title">Patient C (synthetic)</span><span class="meta">EGFR L858R mutation detected on tissue sequencing at diagnosis.</span><span class="meta">0 likely, 1 possible, 9 not eligible among 10 trials near Geneva</span></a></li></ul></main>
+<footer class="wrap"><p>Trial data from the ClinicalTrials.gov API.</p></footer></body></html>

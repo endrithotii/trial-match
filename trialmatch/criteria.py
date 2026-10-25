@@ -96,6 +96,18 @@ _CLINICAL = re.compile(
     re.I)
 
 
+_CONDITIONAL = re.compile(
+    r"^\s*(?:for\s+(?:patients|participants|subjects|those|aga|cohort|arm|part)\b|for\s+[\w\s+/-]{0,40}\bonly\b|"
+    r"(?:cohort|arm|part|group|module|substudy)\s*[\w.-]{0,6}\s*[:(]|only\s+for\b|if\s+applicable)",
+    re.I)
+
+
+def is_conditional(c: Criterion) -> bool:
+    """Criteria that apply to one cohort or arm only ("For AGA-negative NSCLC only: ...").
+    Failing one of them rules a patient out of that cohort, not out of the trial."""
+    return bool(_CONDITIONAL.search(c.text))
+
+
 def is_administrative(c: Criterion) -> bool:
     """Consent, contraception or compliance only. Any clinical content keeps it in."""
     return bool(_ADMIN.search(c.text)) and not _CLINICAL.search(c.text)

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 
-from .criteria import Criterion, is_administrative, parse
+from .criteria import Criterion, is_administrative, is_conditional, parse
 from .ctgov import Trial, nearest_site
 from .llm import Model
 from .patient import Patient
@@ -101,6 +101,8 @@ def match(trial: Trial, patient: Patient, writer: Model, checker: Model) -> dict
                 row.update(answer="disputed", by="disputed",
                            reason=f"Writer said {a['answer'].replace('_', ' ')}, checker said "
                                   f"{b['answer'].replace('_', ' ')}. {a['reason']}")
+        if is_conditional(c):
+            row["conditional"] = True
         rows.append(row)
 
     site, distance = nearest_site(trial, patient.point)
@@ -111,9 +113,11 @@ def match(trial: Trial, patient: Patient, writer: Model, checker: Model) -> dict
 
 def outcome(rows: list[dict]) -> dict:
     """Plain rules on the verdicts, so the result can be explained line by line."""
-    blockers = [r for r in rows if (r["kind"] == "inclusion" and r["answer"] == "not_met")
-                or (r["kind"] == "exclusion" and r["answer"] == "applies")]
-    open_q = [r for r in rows if r["answer"] in ("unknown", "disputed")]
+    fails = [r for r in rows if (r["kind"] == "inclusion" and r["answer"] == "not_met")
+             or (r["kind"] == "exclusion" and r["answer"] == "applies")]
+    # A cohort-specific criterion rules the patient out of one cohort only: it becomes a question.
+    blockers = [r for r in fails if not r.get("conditional")]
+    open_q = [r for r in rows if r["answer"] in ("unknown", "disputed")] + [r for r in fails if r.get("conditional")]
     clear = [r for r in rows if r["answer"] in ("met", "does_not_apply")]
     judged = [r for r in rows if r["answer"] != "screening"]
     if blockers:
