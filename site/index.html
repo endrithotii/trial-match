@@ -1,82 +1,101 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
-<title>trial-match</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<title>trial-match</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Young+Serif&display=swap">
 <style>
-:root { --bg: #F4F6F5; --card: #FCFDFC; --ink: #1C2422; --muted: #56625E; --rule: #D3DAD7;
-  --ok: #2F6B4F; --ok-bg: #E2EFE8; --no: #9C3B3B; --no-bg: #F5E3E1; --open: #8A9692; --open-bg: #E9EDEB;
-  --dispute: #A5660B; --dispute-bg: #F6EAD3; --link: #2C5A8A;
-  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --cond: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif; }
+:root { --ground: #E3EDF5; --sheet: #FFFFFF; --navy: #10304D; --text: #1B2B3A; --soft: #4A5D70; --line: #C9D8E5;
+  --go: #12936A; --go-tint: #DDF3EA; --stop: #D9363E; --stop-tint: #FCE4E4;
+  --ask: #F2B705; --ask-tint: #FFF4C7; --ask-ink: #6B5000; --dispute: #7357E8; --dispute-tint: #ECE7FF; --idle: #9AAABB;
+  --body: "Atkinson Hyperlegible", Verdana, sans-serif; --display: "Young Serif", Georgia, serif; }
 * { box-sizing: border-box; }
-html { background: var(--bg); color: var(--ink); }
-body { margin: 0; font: 16px/1.55 var(--sans); }
-a { color: var(--link); }
-a:focus-visible, summary:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
-.wrap { max-width: 76rem; margin: 0 auto; padding-inline: 1.25rem; }
+html { background: var(--ground); color: var(--text); }
+body { margin: 0; font: 17px/1.6 var(--body); }
+a { color: var(--navy); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--ask); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 78rem; margin: 0 auto; padding-inline: 1.25rem; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.banner { margin: 0; padding: 0.6rem 1.25rem; background: var(--ink); color: #EEF2F0; font-size: 0.9rem; text-align: center; }
-.top { padding-block: 2.5rem 1.5rem; }
-.crumb { margin: 0 0 0.5rem; font: 600 0.9rem var(--cond); }
-h1 { font: 600 clamp(1.9rem, 4vw, 2.6rem)/1.1 var(--cond); margin: 0; letter-spacing: -0.01em; }
-h2 { font: 600 1.05rem var(--cond); margin: 0 0 0.6rem; }
-h4 { font: 600 0.95rem var(--cond); margin: 0 0 0.4rem; }
-.lede { max-width: 62ch; color: var(--muted); margin: 0.8rem 0 0; }
-.tally { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0 0; }
-.tally div { background: var(--card); border: 1px solid var(--rule); border-top: 4px solid; padding: 0.6rem 1rem; min-width: 9rem; }
-.tally .likely { border-top-color: var(--ok); } .tally .possible { border-top-color: var(--dispute); } .tally .not_eligible { border-top-color: var(--no); }
-.tally dt { font-size: 0.85rem; color: var(--muted); } .tally dd { margin: 0; font: 600 1.8rem/1.1 var(--cond); }
-.note.warn { background: var(--dispute-bg); padding: 0.6rem 0.9rem; max-width: 62ch; }
-.grid { display: grid; grid-template-columns: 19rem 1fr; gap: 2rem; align-items: start; padding-bottom: 2rem; }
-.profile { position: sticky; top: 1rem; background: var(--card); border: 1px solid var(--rule); padding: 1.1rem 1.2rem; font-size: 0.92rem; }
-.profile ol { list-style: none; padding: 0; margin: 0 0 1.4rem; }
-.profile li { margin: 0 0 0.45rem; }
-.profile li b { display: inline-block; width: 2.1rem; color: var(--muted); font: 600 0.85rem var(--cond); }
-.legend { list-style: none; padding: 0; margin: 0 0 1rem; }
-.legend li { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.35rem; }
-.small { color: var(--muted); font-size: 0.85rem; margin: 0; }
 
-.trial { background: var(--card); border: 1px solid var(--rule); border-left: 5px solid var(--open); margin: 0 0 0.9rem; }
-.trial.likely { border-left-color: var(--ok); } .trial.possible { border-left-color: var(--dispute); } .trial.not_eligible { border-left-color: var(--no); }
-.trial > summary { list-style: none; cursor: pointer; padding: 1rem 1.2rem; display: grid; gap: 0.3rem; }
+.band { background: var(--navy); color: #F2F7FB; padding-block: 2.2rem 2.6rem; border-radius: 0 0 2.5rem 2.5rem; }
+.band a { color: #F2F7FB; }
+.back { margin: 0 0 1rem; font-size: 0.95rem; }
+.back a::before { content: "‹ "; }
+h1 { font: 400 clamp(2rem, 4.6vw, 3.2rem)/1.1 var(--display); margin: 0; max-width: 22ch; }
+.lede { max-width: 60ch; margin: 1rem 0 0; color: #C9DAEA; }
+.tally { list-style: none; display: flex; flex-wrap: wrap; gap: 0.6rem; padding: 0; margin: 1.6rem 0 0; }
+.tally li { display: flex; align-items: center; gap: 0.6rem; background: rgba(255,255,255,0.08); border-radius: 999px; padding: 0.35rem 1.1rem 0.35rem 0.35rem; }
+.tally b { display: grid; place-items: center; min-width: 2.4rem; height: 2.4rem; border-radius: 50%; font-size: 1.15rem; color: #fff; }
+.tally .likely b { background: var(--go); } .tally .possible b { background: var(--ask); color: var(--navy); } .tally .not_eligible b { background: var(--stop); }
+.warn { background: var(--ask); color: var(--navy); border-radius: 1rem; padding: 0.6rem 1rem; max-width: 60ch; }
+
+.grid { display: grid; grid-template-columns: 20rem minmax(0, 1fr); gap: 2rem; align-items: start; padding-block: 2rem; }
+.wristband { position: sticky; top: 1rem; background: var(--sheet); border-radius: 1.6rem; padding: 1.4rem 1.4rem 1.2rem; border-top: 0.9rem solid var(--navy); }
+.wristband h2 { font: 400 1.15rem var(--display); color: var(--navy); margin: 0 0 0.7rem; }
+.facts { list-style: none; padding: 0; margin: 0 0 1.6rem; font-size: 0.95rem; }
+.facts li { padding: 0.35rem 0; display: grid; grid-template-columns: 2.4rem 1fr; }
+.facts b, abbr { color: var(--navy); }
+.legend { list-style: none; padding: 0; margin: 0 0 1rem; font-size: 0.92rem; }
+.legend li { display: flex; gap: 0.6rem; align-items: center; margin: 0.35rem 0; }
+.key { display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; font-weight: 700; font-size: 0.9rem; flex: none; }
+.key.ok { background: var(--go); color: #fff; } .key.no { background: var(--stop); color: #fff; }
+.key.dispute { background: var(--dispute); color: #fff; } .key.open { background: var(--ask); color: var(--navy); }
+.key.screen { background: var(--sheet); color: var(--soft); box-shadow: inset 0 0 0 2px var(--idle); }
+.how { font-size: 0.88rem; color: var(--soft); margin: 0; }
+
+.trial { background: var(--sheet); border-radius: 1.6rem; margin: 0 0 1rem; overflow: hidden; }
+.trial > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); gap: 1.1rem; padding: 1.3rem 1.4rem; }
 .trial > summary::-webkit-details-marker { display: none; }
-.status { font: 600 0.85rem var(--cond); }
-.likely .status { color: var(--ok); } .possible .status { color: var(--dispute); } .not_eligible .status { color: var(--no); }
-.title { font-weight: 600; line-height: 1.35; }
-.meta { color: var(--muted); font-size: 0.88rem; }
-.strip { display: flex; flex-wrap: wrap; gap: 3px; margin: 0.35rem 0 0.1rem; }
-.sq { display: inline-block; width: 14px; height: 14px; border-radius: 2px; background: var(--open-bg); border: 1px solid var(--open); }
-.sq.ok { background: var(--ok); border-color: var(--ok); } .sq.no { background: var(--no); border-color: var(--no); }
-.sq.dispute { background: var(--dispute); border-color: var(--dispute); }
-.sq.screen { background: transparent; border: 1px dashed var(--open); }
-a.sq:hover { outline: 2px solid var(--ink); outline-offset: 1px; }
-.body { padding: 0 1.2rem 1.2rem; }
-.callout { padding: 0.8rem 1rem; margin: 0 0 0.9rem; }
-.callout.no { background: var(--no-bg); } .callout.open { background: var(--open-bg); }
-.callout ul { margin: 0; padding-left: 1.1rem; } .callout li { margin: 0.25rem 0; }
-.why { display: block; color: var(--muted); font-size: 0.88rem; }
-.table-wrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
-th, td { text-align: left; vertical-align: top; padding: 0.5rem 0.6rem 0.5rem 0; border-bottom: 1px solid var(--rule); }
-thead th { font: 600 0.82rem var(--cond); color: var(--muted); border-bottom-color: var(--ink); }
-tbody th { font: 600 0.85rem var(--cond); white-space: nowrap; }
-tr:target { background: #FFF6D6; }
-.ans { white-space: nowrap; }
-.pill { display: inline-block; font: 600 0.8rem var(--cond); padding: 0.1rem 0.45rem; border-radius: 3px; }
-.pill.ok { background: var(--ok-bg); color: var(--ok); } .pill.no { background: var(--no-bg); color: var(--no); }
-.pill.open { background: var(--open-bg); color: var(--muted); } .pill.dispute { background: var(--dispute-bg); color: var(--dispute); }
-.pill.screen { border: 1px dashed var(--open); color: var(--muted); }
-.by { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 0.15rem; }
-.facts abbr { text-decoration: underline dotted; cursor: help; font: 600 0.85rem var(--cond); margin-right: 0.2rem; }
-.reason { color: var(--muted); min-width: 12rem; }
-.src { margin: 0.8rem 0 0; font-size: 0.9rem; }
-.patients { list-style: none; padding: 0; margin: 0 0 3rem; display: grid; gap: 0.8rem; }
-.patients a { display: grid; gap: 0.2rem; padding: 1rem 1.2rem; background: var(--card); border: 1px solid var(--rule); color: var(--ink); text-decoration: none; }
-.patients a:hover { border-color: var(--link); }
-footer { color: var(--muted); font-size: 0.82rem; padding-block: 1rem 3rem; }
-@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .profile { position: static; } }
+.trial[open] > summary { background: #F5F9FC; }
+.disc { display: grid; place-items: center; align-content: center; width: 5.2rem; height: 5.2rem; border-radius: 50%; font: 400 1.9rem/1 var(--display); color: #fff; background: var(--idle); }
+.disc small { font: 400 0.75rem var(--body); opacity: 0.9; margin-top: 0.2rem; }
+.likely .disc { background: var(--go); } .possible .disc { background: var(--ask); color: var(--navy); } .not_eligible .disc { background: var(--stop); }
+.head { display: grid; gap: 0.45rem; min-width: 0; }
+.status { font-weight: 700; font-size: 0.95rem; }
+.likely .status { color: var(--go); } .possible .status { color: var(--ask-ink); } .not_eligible .status { color: var(--stop); }
+.title { font: 400 1.18rem/1.35 var(--display); color: var(--navy); }
+.facts-line { color: var(--soft); font-size: 0.93rem; }
+.capsule { display: flex; gap: 3px; height: 1.1rem; border-radius: 999px; overflow: hidden; background: var(--line); max-width: 34rem; }
+.capsule.big { height: 0.9rem; max-width: none; }
+.seg { flex: 1; min-width: 6px; background: var(--idle); }
+.seg.ok { background: var(--go); } .seg.no { background: var(--stop); } .seg.dispute { background: var(--dispute); }
+.seg.open { background: var(--ask); } .seg.screen { background: repeating-linear-gradient(135deg, var(--idle) 0 3px, var(--sheet) 3px 6px); }
+a.seg:hover { filter: brightness(0.85); }
+
+.body { padding: 0.4rem 1.4rem 1.4rem; }
+.body h4 { font: 400 1.05rem var(--display); margin: 1rem 0 0.5rem; color: var(--navy); }
+.ask, .stop { border-radius: 1.1rem; padding: 0.4rem 1.1rem 0.8rem; margin: 0.8rem 0; }
+.ask { background: var(--ask-tint); } .stop { background: var(--stop-tint); }
+.ask ul, .stop ul { margin: 0; padding-left: 1.1rem; } .ask li, .stop li { margin: 0.35rem 0; }
+.why { display: block; color: var(--soft); font-size: 0.9rem; margin: 0.1rem 0 0; }
+.crits { list-style: none; padding: 0; margin: 0; }
+.crit { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 0.8rem; padding: 0.7rem 0; border-top: 1px solid var(--line); scroll-margin-top: 1rem; }
+.crit:target { background: var(--ask-tint); border-radius: 0.8rem; }
+.glyph { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; font-weight: 700; color: #fff; background: var(--idle); }
+.crit.ok .glyph { background: var(--go); } .crit.no .glyph { background: var(--stop); } .crit.dispute .glyph { background: var(--dispute); }
+.crit.open .glyph { background: var(--ask); color: var(--navy); } .crit.screen .glyph { background: var(--sheet); color: var(--soft); box-shadow: inset 0 0 0 2px var(--idle); }
+.cline, .cverdict { margin: 0; }
+.cline b { color: var(--soft); font-weight: 700; margin-right: 0.3rem; }
+.cverdict { font-size: 0.92rem; margin-top: 0.2rem; }
+.crit.ok strong { color: var(--go); } .crit.no strong { color: var(--stop); } .crit.dispute strong { color: var(--dispute); } .crit.open strong { color: var(--ask-ink); }
+abbr { text-decoration: underline dotted; cursor: help; font-weight: 700; }
+.src { margin: 1rem 0 0; }
+
+.home { padding-block: 3rem 3.4rem; }
+.pick { font: 400 1.4rem var(--display); color: var(--navy); margin: 2.2rem 0 1rem; }
+.patients { list-style: none; padding: 0; margin: 0 0 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
+.patients a { display: grid; gap: 0.6rem; padding: 1.4rem; background: var(--sheet); border-radius: 1.6rem; color: var(--text); text-decoration: none; border-top: 0.9rem solid var(--navy); height: 100%; }
+.patients a:hover { border-top-color: var(--go); }
+.who { font: 400 1.35rem/1.2 var(--display); color: var(--navy); }
+.what { color: var(--soft); }
+.counts { font-size: 0.92rem; }
+.foot { color: var(--soft); font-size: 0.88rem; padding-block: 0.5rem 3rem; }
+.foot p { margin: 0.3rem 0; max-width: 80ch; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .wristband { position: static; } }
+@media (max-width: 520px) { .trial > summary { grid-template-columns: 1fr; } .disc { width: 4rem; height: 4rem; font-size: 1.5rem; } .band { border-radius: 0 0 1.5rem 1.5rem; } }
 </style></head><body>
-<p class="banner">Synthetic patients. A research demonstration, not medical advice.</p>
-<header class="wrap top"><h1>trial-match</h1>
-<p class="lede">Which recruiting clinical trials could this patient join, and why? Each trial's eligibility criteria are split into single criteria and judged against the patient's facts, with every verdict tied to the facts it used and checked by a second, independent model.</p></header>
-<main class="wrap"><ul class="patients"><li><a href="patient-a.html"><span class="title">Patient A (synthetic)</span><span class="meta">EGFR exon 19 deletion detected on tissue next-generation sequencing at diagnosis.</span><span class="meta">0 likely, 3 possible, 7 not eligible among 10 trials near Basel</span></a></li><li><a href="patient-b.html"><span class="title">Patient B (synthetic)</span><span class="meta">EGFR exon 20 insertion mutation detected on tissue next-generation sequencing.</span><span class="meta">0 likely, 2 possible, 8 not eligible among 10 trials near Zurich</span></a></li><li><a href="patient-c.html"><span class="title">Patient C (synthetic)</span><span class="meta">EGFR L858R mutation detected on tissue sequencing at diagnosis.</span><span class="meta">0 likely, 1 possible, 9 not eligible among 10 trials near Geneva</span></a></li></ul></main>
-<footer class="wrap"><p>Trial data from the ClinicalTrials.gov API.</p></footer></body></html>
+<header class="band home">
+  <div class="wrap">
+    <h1>Which clinical trials could this patient join?</h1>
+    <p class="lede">For each patient, recruiting trials nearby are pulled from ClinicalTrials.gov. Every eligibility criterion is judged on its own against the patient's facts, each verdict says which facts it used, and a second, independent model checks the verdicts that decide the outcome.</p>
+  </div>
+</header>
+<main class="wrap"><h2 class="pick">Pick a patient</h2><ul class="patients"><li><a href="patient-a.html"><span class="who">Patient A (synthetic)</span><span class="what">EGFR exon 19 deletion detected on tissue next-generation sequencing at diagnosis.</span><span class="capsule big" aria-hidden="true"><span class="seg no" style="flex:7"></span><span class="seg open" style="flex:3"></span></span><span class="counts">0 likely, 3 possible, 7 ruled out, of 10 trials near Basel</span></a></li><li><a href="patient-b.html"><span class="who">Patient B (synthetic)</span><span class="what">EGFR exon 20 insertion mutation detected on tissue next-generation sequencing.</span><span class="capsule big" aria-hidden="true"><span class="seg no" style="flex:8"></span><span class="seg open" style="flex:2"></span></span><span class="counts">0 likely, 2 possible, 8 ruled out, of 10 trials near Zurich</span></a></li><li><a href="patient-c.html"><span class="who">Patient C (synthetic)</span><span class="what">EGFR L858R mutation detected on tissue sequencing at diagnosis.</span><span class="capsule big" aria-hidden="true"><span class="seg no" style="flex:9"></span><span class="seg open" style="flex:1"></span></span><span class="counts">0 likely, 1 possible, 9 ruled out, of 10 trials near Geneva</span></a></li></ul></main>
+<footer class="wrap foot"><p>The three patients are synthetic. Trial data from the ClinicalTrials.gov API. Not medical advice.</p></footer></body></html>

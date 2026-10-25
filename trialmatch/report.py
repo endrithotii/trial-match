@@ -15,6 +15,7 @@ ANSWER = {
     "unknown": ("Unknown", "open"), "disputed": ("Models disagree", "dispute"),
     "screening": ("At screening", "screen"),
 }
+GLYPH = {"ok": "✓", "no": "✕", "open": "?", "dispute": "⇄", "screen": "○"}
 BY = {"both": "both models", "code": "code", "writer": "first model only", "disputed": "models disagree"}
 
 
@@ -36,52 +37,68 @@ def _facts_ref(facts: list[str], patient: dict) -> str:
 
 
 def _strip(rows: list[dict], key: str) -> str:
+    # One segment per criterion, grouped by outcome so the bar reads at a glance.
+    order = ["no", "dispute", "open", "screen", "ok"]
+    rows = sorted(rows, key=lambda r: order.index(ANSWER[r["answer"]][1]))
     cells = "".join(
-        f'<a class="sq {ANSWER[r["answer"]][1]}" href="#{key}-{_e(r["id"])}" '
+        f'<a class="seg {ANSWER[r["answer"]][1]}" href="#{key}-{_e(r["id"])}" '
         f'title="{_e(r["id"])}: {_e(ANSWER[r["answer"]][0])}"><span class="sr">{_e(r["id"])} {_e(ANSWER[r["answer"]][0])}</span></a>'
         for r in rows)
-    return f'<div class="strip" role="list" aria-label="Criteria, one square each">{cells}</div>'
+    return f'<span class="capsule" role="list" aria-label="Criteria, one segment each">{cells}</span>'
+
+
+
+def _why(x: dict) -> str:
+    return f'<p class="why">{_e(x["reason"])}</p>' if x.get("reason") else ""
 
 
 def _trial(r: dict, patient: dict, i: int) -> str:
     t, o, key = r["trial"], r["outcome"], f"t{i}"
     label, _ = STATUS[o["status"]]
     site = r.get("nearest_site")
-    where = (f'{_e(site["city"])}, {_e(site["country"])}, {r["distance_km"]} km' if site else "No recruiting site with location")
+    where = (f'{_e(site["city"])}, {_e(site["country"])}, {r["distance_km"]} km away' if site else "No recruiting site with a location")
     by_id = {x["id"]: x for x in r["rows"]}
     blockers = "".join(f'<li><b>{_e(b)}</b> {_e(by_id[b]["text"])}<span class="why">{_e(by_id[b].get("reason", ""))}</span></li>'
                        for b in o["blockers"])
     questions = "".join(f'<li><b>{_e(q)}</b> {_e(by_id[q]["text"])}<span class="why">{_e(by_id[q].get("reason", ""))}</span></li>'
                         for q in o["open"])
     rows = "".join(
-        f'<tr id="{key}-{_e(x["id"])}" class="{ANSWER[x["answer"]][1]}"><th scope="row">{_e(x["id"])}</th>'
-        f'<td>{_e(x["text"])}</td><td class="ans"><span class="pill {ANSWER[x["answer"]][1]}">{_e(ANSWER[x["answer"]][0])}</span>'
-        f'<span class="by">{_e(BY.get(x["by"], x["by"]))}</span></td>'
-        f'<td class="facts">{_facts_ref(x.get("facts", []), patient)}</td><td class="reason">{_e(x.get("reason", ""))}</td></tr>'
+        f'<li id="{key}-{_e(x["id"])}" class="crit {ANSWER[x["answer"]][1]}">'
+        f'<span class="glyph" aria-hidden="true">{GLYPH[ANSWER[x["answer"]][1]]}</span>'
+        f'<div class="ctext"><p class="cline"><b>{_e(x["id"])}</b> {_e(x["text"])}</p>'
+        f'<p class="cverdict"><strong>{_e(ANSWER[x["answer"]][0])}</strong>, judged by {_e(BY.get(x["by"], x["by"]))}'
+        f'{(", using " + _facts_ref(x.get("facts", []), patient)) if x.get("facts") else ""}</p>'
+        f'{_why(x)}'
+        f'</div></li>'
         for x in r["rows"])
     detail = ""
-    if blockers:
-        detail += f'<div class="callout no"><h4>Rules the patient out</h4><ul>{blockers}</ul></div>'
     if questions:
-        detail += f'<div class="callout open"><h4>To clarify before referral</h4><ul>{questions}</ul></div>'
+        detail += f'<div class="ask"><h4>Ask before referring</h4><ul>{questions}</ul></div>'
+    if blockers:
+        detail += f'<div class="stop"><h4>What rules the patient out</h4><ul>{blockers}</ul></div>'
+    n_open = len(o["open"])
     return f"""
 <details class="trial {o['status']}" id="{key}">
   <summary>
-    <span class="status">{_e(label)}</span>
-    <span class="title">{_e(t['title'])}</span>
-    <span class="meta">{_e(t['nct'])} · {_e(_phase(t['phases']))} · {_e(t['sponsor'])}</span>
-    <span class="meta where">Nearest recruiting site: {where}</span>
-    {_strip(r['rows'], key)}
-    <span class="meta">{o['cleared']} of {o['judged']} judged criteria cleared{f", {len(o['open'])} open" if o['open'] else ""}</span>
+    <span class="disc" aria-hidden="true">{o['cleared']}<small>of {o['judged']}</small></span>
+    <span class="head">
+      <span class="status">{_e(label)}</span>
+      <span class="title">{_e(t['title'])}</span>
+      {_strip(r['rows'], key)}
+      <span class="facts-line">{_e(_phase(t['phases']))}, {_e(t['sponsor'])}. Nearest site: {where}.{f" {n_open} question{'s' if n_open != 1 else ''} to clarify." if n_open else ""}</span>
+    </span>
   </summary>
   <div class="body">
     {detail}
-    <div class="table-wrap"><table>
-      <thead><tr><th scope="col">Criterion</th><th scope="col">Text from the registry</th><th scope="col">Verdict</th><th scope="col">Patient facts</th><th scope="col">Reason</th></tr></thead>
-      <tbody>{rows}</tbody></table></div>
-    <p class="src"><a href="{_e(t['url'])}">Full record on ClinicalTrials.gov</a></p>
+    <h4 class="all">Every criterion, as written in the registry</h4>
+    <ol class="crits">{rows}</ol>
+    <p class="src"><a href="{_e(t['url'])}">{_e(t['nct'])} on ClinicalTrials.gov</a></p>
   </div>
 </details>"""
+
+
+FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+         '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Young+Serif&display=swap">')
 
 
 def page(run: dict) -> str:
@@ -91,42 +108,45 @@ def page(run: dict) -> str:
                     enumerate([f"Age {p['age']:g}, {p['sex'].lower()}, lives in {p['city']}."] + p["facts"], start=1))
     trials = "".join(_trial(r, p, i) for i, r in enumerate(results))
     incomplete = ("" if run["complete"] else
-                  f'<p class="note warn">This run stopped early ({_e(run.get("stopped") or "not all trials were matched")}). '
-                  'The next run continues from the cache.</p>')
+                  f'<p class="warn">This run stopped early ({_e(run.get("stopped") or "not all trials were matched")}). '
+                  'The next run continues where it stopped.</p>')
     a = run["audit"]
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
-<title>{_e(p['label'])}: trial matches</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<title>{_e(p['label'])}: trial matches</title>{FONTS}
 <style>{CSS}</style></head><body>
-<p class="banner">Synthetic patient. A research demonstration, not medical advice: trial details come from ClinicalTrials.gov and must be confirmed with the trial team.</p>
-<header class="wrap top">
-  <p class="crumb"><a href="index.html">trial-match</a></p>
-  <h1>{_e(p['label'])}</h1>
-  <p class="lede">Recruiting trials for <b>{_e(q['condition'])}</b>{f" mentioning <b>{_e(q['term'])}</b>" if q['term'] else ""} within {q['radius_km']} km of {_e(p['city'])}:
-    {q['found']} found, the {len(results)} closest matched criterion by criterion.</p>
-  <dl class="tally">
-    <div class="likely"><dt>Likely eligible</dt><dd>{counts['likely']}</dd></div>
-    <div class="possible"><dt>Possible</dt><dd>{counts['possible']}</dd></div>
-    <div class="not_eligible"><dt>Not eligible</dt><dd>{counts['not_eligible']}</dd></div>
-  </dl>
-  {incomplete}
+<header class="band">
+  <div class="wrap">
+    <p class="back"><a href="index.html">All patients</a></p>
+    <h1>{_e(p['label'])}</h1>
+    <p class="lede">Recruiting trials for {_e(q['condition'])}{f" that mention {_e(q['term'])}" if q['term'] else ""}, within {q['radius_km']} km of {_e(p['city'])}.
+      {q['found']} found; the {len(results)} closest were checked criterion by criterion.</p>
+    <ul class="tally">
+      <li class="likely"><b>{counts['likely']}</b> likely eligible</li>
+      <li class="possible"><b>{counts['possible']}</b> possible, with questions</li>
+      <li class="not_eligible"><b>{counts['not_eligible']}</b> ruled out</li>
+    </ul>
+    {incomplete}
+  </div>
 </header>
 <main class="wrap grid">
-  <aside class="profile"><h2>Patient facts</h2><ol>{facts}</ol>
-    <h2>How to read a trial</h2>
+  <aside class="wristband">
+    <h2>What we know about this patient</h2>
+    <ol class="facts">{facts}</ol>
+    <h2>Reading the bars</h2>
     <ul class="legend">
-      <li><span class="sq ok"></span> met, or exclusion does not apply</li>
-      <li><span class="sq no"></span> rules the patient out</li>
-      <li><span class="sq dispute"></span> the two models disagree</li>
-      <li><span class="sq open"></span> unknown from the facts</li>
-      <li><span class="sq screen"></span> consent or pregnancy, at screening</li>
+      <li><span class="key ok">✓</span> met, or the exclusion does not apply</li>
+      <li><span class="key no">✕</span> rules the patient out</li>
+      <li><span class="key dispute">⇄</span> the two models disagree</li>
+      <li><span class="key open">?</span> not known from these facts</li>
+      <li><span class="key screen">○</span> checked at screening (consent, pregnancy test)</li>
     </ul>
-    <p class="small">Age and sex are checked by code. Every other verdict cites the facts it used; one model judges, a second model from a different provider re-judges every decisive verdict.</p>
+    <p class="how">Age and sex are checked by code. Every other verdict names the facts it used. One model judges; a second model from another company re-judges every verdict that decides the outcome.</p>
   </aside>
-  <section class="trials"><h2 class="sr">Trials</h2>{trials or '<p>No trials matched yet.</p>'}</section>
+  <section class="trials" aria-label="Trials">{trials or '<p>No trials matched yet.</p>'}</section>
 </main>
-<footer class="wrap"><p>Matched {_e(a['finished'])} with {_e(a['writer'])}, checked by {_e(a['checker'])}. Prompt {_e(a['prompt'])}, trial-match {_e(a['version'])}. Source: {_e(a['source'])}.</p></footer>
+<footer class="wrap foot"><p>Synthetic patient, for demonstration. Not medical advice: confirm every detail with the trial team.</p>
+<p>Matched {_e(a['finished'][:10])} by {_e(a['writer'])}, checked by {_e(a['checker'])}. Data: {_e(a['source'])}.</p></footer>
 </body></html>"""
 
 
@@ -135,92 +155,120 @@ def index(runs: list[dict]) -> str:
     for run in runs:
         p, rs = run["patient"], run["results"]
         c = {k: sum(1 for r in rs if r["outcome"]["status"] == k) for k in STATUS}
-        items += (f'<li><a href="{_e(p["id"])}.html"><span class="title">{_e(p["label"])}</span>'
-                  f'<span class="meta">{_e(p["facts"][1] if len(p["facts"]) > 1 else "")}</span>'
-                  f'<span class="meta">{c["likely"]} likely, {c["possible"]} possible, {c["not_eligible"]} not eligible '
-                  f'among {len(rs)} trials near {_e(p["city"])}</span></a></li>')
+        total = max(len(rs), 1)
+        bar = "".join(f'<span class="seg {cls}" style="flex:{c[k]}"></span>'
+                      for k, cls in (("not_eligible", "no"), ("possible", "open"), ("likely", "ok")) if c[k])
+        items += (f'<li><a href="{_e(p["id"])}.html">'
+                  f'<span class="who">{_e(p["label"])}</span>'
+                  f'<span class="what">{_e(p["facts"][1] if len(p["facts"]) > 1 else "")}</span>'
+                  f'<span class="capsule big" aria-hidden="true">{bar}</span>'
+                  f'<span class="counts">{c["likely"]} likely, {c["possible"]} possible, {c["not_eligible"]} ruled out, '
+                  f'of {len(rs)} trials near {_e(p["city"])}</span></a></li>')
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
-<title>trial-match</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<title>trial-match</title>{FONTS}
 <style>{CSS}</style></head><body>
-<p class="banner">Synthetic patients. A research demonstration, not medical advice.</p>
-<header class="wrap top"><h1>trial-match</h1>
-<p class="lede">Which recruiting clinical trials could this patient join, and why? Each trial's eligibility criteria are split into single criteria and judged against the patient's facts, with every verdict tied to the facts it used and checked by a second, independent model.</p></header>
-<main class="wrap"><ul class="patients">{items}</ul></main>
-<footer class="wrap"><p>Trial data from the ClinicalTrials.gov API.</p></footer></body></html>"""
+<header class="band home">
+  <div class="wrap">
+    <h1>Which clinical trials could this patient join?</h1>
+    <p class="lede">For each patient, recruiting trials nearby are pulled from ClinicalTrials.gov. Every eligibility criterion is judged on its own against the patient's facts, each verdict says which facts it used, and a second, independent model checks the verdicts that decide the outcome.</p>
+  </div>
+</header>
+<main class="wrap"><h2 class="pick">Pick a patient</h2><ul class="patients">{items}</ul></main>
+<footer class="wrap foot"><p>The three patients are synthetic. Trial data from the ClinicalTrials.gov API. Not medical advice.</p></footer></body></html>"""
 
 
+# Calm, clinical palette: a soft blue ground lowers tension for a reader who
+# may be a patient; the outcome colours follow traffic logic people already
+# know (green go, red stop), and yellow is kept for the one thing to act on:
+# questions to clarify. Every colour is paired with a glyph.
 CSS = """
-:root { --bg: #F4F6F5; --card: #FCFDFC; --ink: #1C2422; --muted: #56625E; --rule: #D3DAD7;
-  --ok: #2F6B4F; --ok-bg: #E2EFE8; --no: #9C3B3B; --no-bg: #F5E3E1; --open: #8A9692; --open-bg: #E9EDEB;
-  --dispute: #A5660B; --dispute-bg: #F6EAD3; --link: #2C5A8A;
-  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --cond: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif; }
+:root { --ground: #E3EDF5; --sheet: #FFFFFF; --navy: #10304D; --text: #1B2B3A; --soft: #4A5D70; --line: #C9D8E5;
+  --go: #12936A; --go-tint: #DDF3EA; --stop: #D9363E; --stop-tint: #FCE4E4;
+  --ask: #F2B705; --ask-tint: #FFF4C7; --ask-ink: #6B5000; --dispute: #7357E8; --dispute-tint: #ECE7FF; --idle: #9AAABB;
+  --body: "Atkinson Hyperlegible", Verdana, sans-serif; --display: "Young Serif", Georgia, serif; }
 * { box-sizing: border-box; }
-html { background: var(--bg); color: var(--ink); }
-body { margin: 0; font: 16px/1.55 var(--sans); }
-a { color: var(--link); }
-a:focus-visible, summary:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
-.wrap { max-width: 76rem; margin: 0 auto; padding-inline: 1.25rem; }
+html { background: var(--ground); color: var(--text); }
+body { margin: 0; font: 17px/1.6 var(--body); }
+a { color: var(--navy); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--ask); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 78rem; margin: 0 auto; padding-inline: 1.25rem; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.banner { margin: 0; padding: 0.6rem 1.25rem; background: var(--ink); color: #EEF2F0; font-size: 0.9rem; text-align: center; }
-.top { padding-block: 2.5rem 1.5rem; }
-.crumb { margin: 0 0 0.5rem; font: 600 0.9rem var(--cond); }
-h1 { font: 600 clamp(1.9rem, 4vw, 2.6rem)/1.1 var(--cond); margin: 0; letter-spacing: -0.01em; }
-h2 { font: 600 1.05rem var(--cond); margin: 0 0 0.6rem; }
-h4 { font: 600 0.95rem var(--cond); margin: 0 0 0.4rem; }
-.lede { max-width: 62ch; color: var(--muted); margin: 0.8rem 0 0; }
-.tally { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0 0; }
-.tally div { background: var(--card); border: 1px solid var(--rule); border-top: 4px solid; padding: 0.6rem 1rem; min-width: 9rem; }
-.tally .likely { border-top-color: var(--ok); } .tally .possible { border-top-color: var(--dispute); } .tally .not_eligible { border-top-color: var(--no); }
-.tally dt { font-size: 0.85rem; color: var(--muted); } .tally dd { margin: 0; font: 600 1.8rem/1.1 var(--cond); }
-.note.warn { background: var(--dispute-bg); padding: 0.6rem 0.9rem; max-width: 62ch; }
-.grid { display: grid; grid-template-columns: 19rem 1fr; gap: 2rem; align-items: start; padding-bottom: 2rem; }
-.profile { position: sticky; top: 1rem; background: var(--card); border: 1px solid var(--rule); padding: 1.1rem 1.2rem; font-size: 0.92rem; }
-.profile ol { list-style: none; padding: 0; margin: 0 0 1.4rem; }
-.profile li { margin: 0 0 0.45rem; }
-.profile li b { display: inline-block; width: 2.1rem; color: var(--muted); font: 600 0.85rem var(--cond); }
-.legend { list-style: none; padding: 0; margin: 0 0 1rem; }
-.legend li { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.35rem; }
-.small { color: var(--muted); font-size: 0.85rem; margin: 0; }
 
-.trial { background: var(--card); border: 1px solid var(--rule); border-left: 5px solid var(--open); margin: 0 0 0.9rem; }
-.trial.likely { border-left-color: var(--ok); } .trial.possible { border-left-color: var(--dispute); } .trial.not_eligible { border-left-color: var(--no); }
-.trial > summary { list-style: none; cursor: pointer; padding: 1rem 1.2rem; display: grid; gap: 0.3rem; }
+.band { background: var(--navy); color: #F2F7FB; padding-block: 2.2rem 2.6rem; border-radius: 0 0 2.5rem 2.5rem; }
+.band a { color: #F2F7FB; }
+.back { margin: 0 0 1rem; font-size: 0.95rem; }
+.back a::before { content: "‹ "; }
+h1 { font: 400 clamp(2rem, 4.6vw, 3.2rem)/1.1 var(--display); margin: 0; max-width: 22ch; }
+.lede { max-width: 60ch; margin: 1rem 0 0; color: #C9DAEA; }
+.tally { list-style: none; display: flex; flex-wrap: wrap; gap: 0.6rem; padding: 0; margin: 1.6rem 0 0; }
+.tally li { display: flex; align-items: center; gap: 0.6rem; background: rgba(255,255,255,0.08); border-radius: 999px; padding: 0.35rem 1.1rem 0.35rem 0.35rem; }
+.tally b { display: grid; place-items: center; min-width: 2.4rem; height: 2.4rem; border-radius: 50%; font-size: 1.15rem; color: #fff; }
+.tally .likely b { background: var(--go); } .tally .possible b { background: var(--ask); color: var(--navy); } .tally .not_eligible b { background: var(--stop); }
+.warn { background: var(--ask); color: var(--navy); border-radius: 1rem; padding: 0.6rem 1rem; max-width: 60ch; }
+
+.grid { display: grid; grid-template-columns: 20rem minmax(0, 1fr); gap: 2rem; align-items: start; padding-block: 2rem; }
+.wristband { position: sticky; top: 1rem; background: var(--sheet); border-radius: 1.6rem; padding: 1.4rem 1.4rem 1.2rem; border-top: 0.9rem solid var(--navy); }
+.wristband h2 { font: 400 1.15rem var(--display); color: var(--navy); margin: 0 0 0.7rem; }
+.facts { list-style: none; padding: 0; margin: 0 0 1.6rem; font-size: 0.95rem; }
+.facts li { padding: 0.35rem 0; display: grid; grid-template-columns: 2.4rem 1fr; }
+.facts b, abbr { color: var(--navy); }
+.legend { list-style: none; padding: 0; margin: 0 0 1rem; font-size: 0.92rem; }
+.legend li { display: flex; gap: 0.6rem; align-items: center; margin: 0.35rem 0; }
+.key { display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; font-weight: 700; font-size: 0.9rem; flex: none; }
+.key.ok { background: var(--go); color: #fff; } .key.no { background: var(--stop); color: #fff; }
+.key.dispute { background: var(--dispute); color: #fff; } .key.open { background: var(--ask); color: var(--navy); }
+.key.screen { background: var(--sheet); color: var(--soft); box-shadow: inset 0 0 0 2px var(--idle); }
+.how { font-size: 0.88rem; color: var(--soft); margin: 0; }
+
+.trial { background: var(--sheet); border-radius: 1.6rem; margin: 0 0 1rem; overflow: hidden; }
+.trial > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); gap: 1.1rem; padding: 1.3rem 1.4rem; }
 .trial > summary::-webkit-details-marker { display: none; }
-.status { font: 600 0.85rem var(--cond); }
-.likely .status { color: var(--ok); } .possible .status { color: var(--dispute); } .not_eligible .status { color: var(--no); }
-.title { font-weight: 600; line-height: 1.35; }
-.meta { color: var(--muted); font-size: 0.88rem; }
-.strip { display: flex; flex-wrap: wrap; gap: 3px; margin: 0.35rem 0 0.1rem; }
-.sq { display: inline-block; width: 14px; height: 14px; border-radius: 2px; background: var(--open-bg); border: 1px solid var(--open); }
-.sq.ok { background: var(--ok); border-color: var(--ok); } .sq.no { background: var(--no); border-color: var(--no); }
-.sq.dispute { background: var(--dispute); border-color: var(--dispute); }
-.sq.screen { background: transparent; border: 1px dashed var(--open); }
-a.sq:hover { outline: 2px solid var(--ink); outline-offset: 1px; }
-.body { padding: 0 1.2rem 1.2rem; }
-.callout { padding: 0.8rem 1rem; margin: 0 0 0.9rem; }
-.callout.no { background: var(--no-bg); } .callout.open { background: var(--open-bg); }
-.callout ul { margin: 0; padding-left: 1.1rem; } .callout li { margin: 0.25rem 0; }
-.why { display: block; color: var(--muted); font-size: 0.88rem; }
-.table-wrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
-th, td { text-align: left; vertical-align: top; padding: 0.5rem 0.6rem 0.5rem 0; border-bottom: 1px solid var(--rule); }
-thead th { font: 600 0.82rem var(--cond); color: var(--muted); border-bottom-color: var(--ink); }
-tbody th { font: 600 0.85rem var(--cond); white-space: nowrap; }
-tr:target { background: #FFF6D6; }
-.ans { white-space: nowrap; }
-.pill { display: inline-block; font: 600 0.8rem var(--cond); padding: 0.1rem 0.45rem; border-radius: 3px; }
-.pill.ok { background: var(--ok-bg); color: var(--ok); } .pill.no { background: var(--no-bg); color: var(--no); }
-.pill.open { background: var(--open-bg); color: var(--muted); } .pill.dispute { background: var(--dispute-bg); color: var(--dispute); }
-.pill.screen { border: 1px dashed var(--open); color: var(--muted); }
-.by { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 0.15rem; }
-.facts abbr { text-decoration: underline dotted; cursor: help; font: 600 0.85rem var(--cond); margin-right: 0.2rem; }
-.reason { color: var(--muted); min-width: 12rem; }
-.src { margin: 0.8rem 0 0; font-size: 0.9rem; }
-.patients { list-style: none; padding: 0; margin: 0 0 3rem; display: grid; gap: 0.8rem; }
-.patients a { display: grid; gap: 0.2rem; padding: 1rem 1.2rem; background: var(--card); border: 1px solid var(--rule); color: var(--ink); text-decoration: none; }
-.patients a:hover { border-color: var(--link); }
-footer { color: var(--muted); font-size: 0.82rem; padding-block: 1rem 3rem; }
-@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .profile { position: static; } }
+.trial[open] > summary { background: #F5F9FC; }
+.disc { display: grid; place-items: center; align-content: center; width: 5.2rem; height: 5.2rem; border-radius: 50%; font: 400 1.9rem/1 var(--display); color: #fff; background: var(--idle); }
+.disc small { font: 400 0.75rem var(--body); opacity: 0.9; margin-top: 0.2rem; }
+.likely .disc { background: var(--go); } .possible .disc { background: var(--ask); color: var(--navy); } .not_eligible .disc { background: var(--stop); }
+.head { display: grid; gap: 0.45rem; min-width: 0; }
+.status { font-weight: 700; font-size: 0.95rem; }
+.likely .status { color: var(--go); } .possible .status { color: var(--ask-ink); } .not_eligible .status { color: var(--stop); }
+.title { font: 400 1.18rem/1.35 var(--display); color: var(--navy); }
+.facts-line { color: var(--soft); font-size: 0.93rem; }
+.capsule { display: flex; gap: 3px; height: 1.1rem; border-radius: 999px; overflow: hidden; background: var(--line); max-width: 34rem; }
+.capsule.big { height: 0.9rem; max-width: none; }
+.seg { flex: 1; min-width: 6px; background: var(--idle); }
+.seg.ok { background: var(--go); } .seg.no { background: var(--stop); } .seg.dispute { background: var(--dispute); }
+.seg.open { background: var(--ask); } .seg.screen { background: repeating-linear-gradient(135deg, var(--idle) 0 3px, var(--sheet) 3px 6px); }
+a.seg:hover { filter: brightness(0.85); }
+
+.body { padding: 0.4rem 1.4rem 1.4rem; }
+.body h4 { font: 400 1.05rem var(--display); margin: 1rem 0 0.5rem; color: var(--navy); }
+.ask, .stop { border-radius: 1.1rem; padding: 0.4rem 1.1rem 0.8rem; margin: 0.8rem 0; }
+.ask { background: var(--ask-tint); } .stop { background: var(--stop-tint); }
+.ask ul, .stop ul { margin: 0; padding-left: 1.1rem; } .ask li, .stop li { margin: 0.35rem 0; }
+.why { display: block; color: var(--soft); font-size: 0.9rem; margin: 0.1rem 0 0; }
+.crits { list-style: none; padding: 0; margin: 0; }
+.crit { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 0.8rem; padding: 0.7rem 0; border-top: 1px solid var(--line); scroll-margin-top: 1rem; }
+.crit:target { background: var(--ask-tint); border-radius: 0.8rem; }
+.glyph { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; font-weight: 700; color: #fff; background: var(--idle); }
+.crit.ok .glyph { background: var(--go); } .crit.no .glyph { background: var(--stop); } .crit.dispute .glyph { background: var(--dispute); }
+.crit.open .glyph { background: var(--ask); color: var(--navy); } .crit.screen .glyph { background: var(--sheet); color: var(--soft); box-shadow: inset 0 0 0 2px var(--idle); }
+.cline, .cverdict { margin: 0; }
+.cline b { color: var(--soft); font-weight: 700; margin-right: 0.3rem; }
+.cverdict { font-size: 0.92rem; margin-top: 0.2rem; }
+.crit.ok strong { color: var(--go); } .crit.no strong { color: var(--stop); } .crit.dispute strong { color: var(--dispute); } .crit.open strong { color: var(--ask-ink); }
+abbr { text-decoration: underline dotted; cursor: help; font-weight: 700; }
+.src { margin: 1rem 0 0; }
+
+.home { padding-block: 3rem 3.4rem; }
+.pick { font: 400 1.4rem var(--display); color: var(--navy); margin: 2.2rem 0 1rem; }
+.patients { list-style: none; padding: 0; margin: 0 0 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
+.patients a { display: grid; gap: 0.6rem; padding: 1.4rem; background: var(--sheet); border-radius: 1.6rem; color: var(--text); text-decoration: none; border-top: 0.9rem solid var(--navy); height: 100%; }
+.patients a:hover { border-top-color: var(--go); }
+.who { font: 400 1.35rem/1.2 var(--display); color: var(--navy); }
+.what { color: var(--soft); }
+.counts { font-size: 0.92rem; }
+.foot { color: var(--soft); font-size: 0.88rem; padding-block: 0.5rem 3rem; }
+.foot p { margin: 0.3rem 0; max-width: 80ch; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .wristband { position: static; } }
+@media (max-width: 520px) { .trial > summary { grid-template-columns: 1fr; } .disc { width: 4rem; height: 4rem; font-size: 1.5rem; } .band { border-radius: 0 0 1.5rem 1.5rem; } }
 """
