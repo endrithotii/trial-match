@@ -1,0 +1,25 @@
+{
+  "id": "patient-a",
+  "label": "Patient A (synthetic)",
+  "synthetic": true,
+  "age": 61,
+  "sex": "FEMALE",
+  "location": {"city": "Basel", "lat": 47.5596, "lon": 7.5886},
+  "facts": [
+    "Diagnosis: non-small cell lung cancer, adenocarcinoma (non-squamous), stage IV.",
+    "EGFR exon 19 deletion detected on tissue next-generation sequencing at diagnosis.",
+    "First-line treatment: osimertinib for 24 months; this is the only systemic treatment received so far.",
+    "Radiological disease progression on osimertinib, confirmed by CT two weeks ago.",
+    "MET amplification detected in circulating tumour DNA at progression.",
+    "No prior chemotherapy, no prior immunotherapy, no prior antibody-drug conjugate.",
+    "Two brain metastases treated with stereotactic radiosurgery 8 months ago; stable on MRI, no symptoms, no steroids.",
+    "No leptomeningeal disease and no spinal cord compression.",
+    "ECOG performance status 1.",
+    "At least one measurable lesion by RECIST 1.1 (right lower lobe mass, 32 mm).",
+    "Laboratory values: ANC 3.1 x 10^9/L, platelets 210 x 10^9/L, haemoglobin 11.8 g/dL, total bilirubin 0.6 x ULN, ALT 1.1 x ULN, creatinine clearance 78 mL/min.",
+    "No history of interstitial lung disease or pneumonitis.",
+    "No active hepatitis B, hepatitis C or HIV infection.",
+    "QTc 432 ms; no clinically significant cardiac disease.",
+    "Post-menopausal for 6 years."
+  ]
+}

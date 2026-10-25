@@ -1,0 +1,20 @@
+{
+  "id": "patient-c",
+  "label": "Patient C (synthetic)",
+  "synthetic": true,
+  "age": 73,
+  "sex": "MALE",
+  "location": {"city": "Geneva", "lat": 46.2044, "lon": 6.1432},
+  "facts": [
+    "Diagnosis: non-small cell lung cancer, adenocarcinoma (non-squamous), stage IV.",
+    "EGFR L858R mutation detected on tissue sequencing at diagnosis.",
+    "First line: osimertinib for 14 months, stopped for progression.",
+    "Second line: carboplatin and pemetrexed for 4 cycles, then pemetrexed maintenance; progression after 7 months.",
+    "No prior immunotherapy and no prior antibody-drug conjugate.",
+    "ECOG performance status 2.",
+    "Measurable disease by RECIST 1.1.",
+    "Creatinine clearance 42 mL/min; other laboratory values within normal limits.",
+    "One untreated brain metastasis of 6 mm, asymptomatic.",
+    "History of grade 2 pneumonitis during prior treatment, resolved."
+  ]
+}

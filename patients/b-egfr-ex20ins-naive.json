@@ -1,0 +1,20 @@
+{
+  "id": "patient-b",
+  "label": "Patient B (synthetic)",
+  "synthetic": true,
+  "age": 54,
+  "sex": "MALE",
+  "location": {"city": "Zurich", "lat": 47.3769, "lon": 8.5417},
+  "facts": [
+    "Diagnosis: non-small cell lung cancer, adenocarcinoma (non-squamous), stage IV, diagnosed three weeks ago.",
+    "EGFR exon 20 insertion mutation detected on tissue next-generation sequencing.",
+    "No prior systemic treatment for advanced disease.",
+    "No brain metastases on baseline MRI.",
+    "ECOG performance status 0.",
+    "Measurable disease by RECIST 1.1 (liver lesion 45 mm, mediastinal lymph node 22 mm).",
+    "Laboratory values: ANC 4.5 x 10^9/L, platelets 260 x 10^9/L, haemoglobin 13.9 g/dL, total bilirubin 0.8 x ULN, creatinine clearance 95 mL/min.",
+    "No history of interstitial lung disease.",
+    "No active infection; HIV, hepatitis B and C negative.",
+    "Type 2 diabetes, controlled with metformin."
+  ]
+}
