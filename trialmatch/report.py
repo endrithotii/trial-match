@@ -178,14 +178,14 @@ def index(runs: list[dict]) -> str:
 <footer class="wrap foot"><p>The three patients are synthetic. Trial data from the ClinicalTrials.gov API. Not medical advice.</p></footer></body></html>"""
 
 
-# Calm, clinical palette: a soft blue ground lowers tension for a reader who
-# may be a patient; the outcome colours follow traffic logic people already
-# know (green go, red stop), and yellow is kept for the one thing to act on:
+# White and cobalt: clean, clinical and trustworthy for a reader who may be a
+# patient. Outcome colours follow traffic logic people already know (green go,
+# rose stop), and sunflower yellow is kept for the one thing to act on:
 # questions to clarify. Every colour is paired with a glyph.
 CSS = """
-:root { --ground: #E3EDF5; --sheet: #FFFFFF; --navy: #10304D; --text: #1B2B3A; --soft: #4A5D70; --line: #C9D8E5;
-  --go: #12936A; --go-tint: #DDF3EA; --stop: #D9363E; --stop-tint: #FCE4E4;
-  --ask: #F2B705; --ask-tint: #FFF4C7; --ask-ink: #6B5000; --dispute: #7357E8; --dispute-tint: #ECE7FF; --idle: #9AAABB;
+:root { --ground: #F2F4FD; --sheet: #FFFFFF; --navy: #2443E8; --text: #0B1033; --soft: #4B5275; --line: #DDE1F0;
+  --go: #13A876; --go-tint: #E2F6EE; --stop: #E8475B; --stop-tint: #FDE7EA;
+  --ask: #FFD23F; --ask-tint: #FFF6D1; --ask-ink: #6E5300; --dispute: #0B1033; --dispute-tint: #E6E8F2; --idle: #A3A9C6;
   --body: "Atkinson Hyperlegible", Verdana, sans-serif; --display: "Young Serif", Georgia, serif; }
 * { box-sizing: border-box; }
 html { background: var(--ground); color: var(--text); }
@@ -195,14 +195,14 @@ a { color: var(--navy); text-decoration-thickness: 2px; text-underline-offset: 3
 .wrap { max-width: 78rem; margin: 0 auto; padding-inline: 1.25rem; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
-.band { background: var(--navy); color: #F2F7FB; padding-block: 2.2rem 2.6rem; border-radius: 0 0 2.5rem 2.5rem; }
-.band a { color: #F2F7FB; }
+.band { background: var(--navy); color: #FFFFFF; padding-block: 2.2rem 2.6rem; border-radius: 0 0 2.5rem 2.5rem; }
+.band a { color: #FFFFFF; }
 .back { margin: 0 0 1rem; font-size: 0.95rem; }
 .back a::before { content: "‹ "; }
-h1 { font: 400 clamp(2rem, 4.6vw, 3.2rem)/1.1 var(--display); margin: 0; max-width: 22ch; }
-.lede { max-width: 60ch; margin: 1rem 0 0; color: #C9DAEA; }
+h1 { color: #FFFFFF; font: 400 clamp(2rem, 4.6vw, 3.2rem)/1.1 var(--display); margin: 0; max-width: 22ch; }
+.lede { max-width: 60ch; margin: 1rem 0 0; color: #DCE2FF; }
 .tally { list-style: none; display: flex; flex-wrap: wrap; gap: 0.6rem; padding: 0; margin: 1.6rem 0 0; }
-.tally li { display: flex; align-items: center; gap: 0.6rem; background: rgba(255,255,255,0.08); border-radius: 999px; padding: 0.35rem 1.1rem 0.35rem 0.35rem; }
+.tally li { display: flex; align-items: center; gap: 0.6rem; background: rgba(255,255,255,0.14); border-radius: 999px; padding: 0.35rem 1.1rem 0.35rem 0.35rem; }
 .tally b { display: grid; place-items: center; min-width: 2.4rem; height: 2.4rem; border-radius: 50%; font-size: 1.15rem; color: #fff; }
 .tally .likely b { background: var(--go); } .tally .possible b { background: var(--ask); color: var(--navy); } .tally .not_eligible b { background: var(--stop); }
 .warn { background: var(--ask); color: var(--navy); border-radius: 1rem; padding: 0.6rem 1rem; max-width: 60ch; }
@@ -224,14 +224,14 @@ h1 { font: 400 clamp(2rem, 4.6vw, 3.2rem)/1.1 var(--display); margin: 0; max-wid
 .trial { background: var(--sheet); border-radius: 1.6rem; margin: 0 0 1rem; overflow: hidden; }
 .trial > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); gap: 1.1rem; padding: 1.3rem 1.4rem; }
 .trial > summary::-webkit-details-marker { display: none; }
-.trial[open] > summary { background: #F5F9FC; }
+.trial[open] > summary { background: #F7F8FE; }
 .disc { display: grid; place-items: center; align-content: center; width: 5.2rem; height: 5.2rem; border-radius: 50%; font: 400 1.9rem/1 var(--display); color: #fff; background: var(--idle); }
 .disc small { font: 400 0.75rem var(--body); opacity: 0.9; margin-top: 0.2rem; }
 .likely .disc { background: var(--go); } .possible .disc { background: var(--ask); color: var(--navy); } .not_eligible .disc { background: var(--stop); }
 .head { display: grid; gap: 0.45rem; min-width: 0; }
 .status { font-weight: 700; font-size: 0.95rem; }
 .likely .status { color: var(--go); } .possible .status { color: var(--ask-ink); } .not_eligible .status { color: var(--stop); }
-.title { font: 400 1.18rem/1.35 var(--display); color: var(--navy); }
+.title { font: 400 1.18rem/1.35 var(--display); color: var(--text); }
 .facts-line { color: var(--soft); font-size: 0.93rem; }
 .capsule { display: flex; gap: 3px; height: 1.1rem; border-radius: 999px; overflow: hidden; background: var(--line); max-width: 34rem; }
 .capsule.big { height: 0.9rem; max-width: none; }
@@ -264,7 +264,7 @@ abbr { text-decoration: underline dotted; cursor: help; font-weight: 700; }
 .patients { list-style: none; padding: 0; margin: 0 0 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
 .patients a { display: grid; gap: 0.6rem; padding: 1.4rem; background: var(--sheet); border-radius: 1.6rem; color: var(--text); text-decoration: none; border-top: 0.9rem solid var(--navy); height: 100%; }
 .patients a:hover { border-top-color: var(--go); }
-.who { font: 400 1.35rem/1.2 var(--display); color: var(--navy); }
+.who { font: 400 1.35rem/1.2 var(--display); color: var(--text); }
 .what { color: var(--soft); }
 .counts { font-size: 0.92rem; }
 .foot { color: var(--soft); font-size: 0.88rem; padding-block: 0.5rem 3rem; }
